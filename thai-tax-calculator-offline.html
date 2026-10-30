@@ -198,7 +198,7 @@ function compute(){
   var selfD=60000,spouseD=(s.maritalStatus==="married"&&!s.spouseIncome)?60000:0;
   var childD=Math.min(s.children,3)*30000,parentD=s.parents*30000,disD=s.disabled*60000;
   var perD=selfD+spouseD+childD+parentD+disD;
-  var lifeD=Math.min(s.lifeIns,100000),hlthD=Math.min(s.healthIns,25000),phD=Math.min(s.parentHealthIns,15000),ssD=Math.min(s.socialSec,9000);
+  var lifeD=Math.min(s.lifeIns,100000),hlthD=Math.min(s.healthIns,25000),phD=Math.min(s.parentHealthIns,15000),ssD=Math.min(s.socialSec,10500);
   var insD=Math.min(lifeD+hlthD,100000)+phD+ssD;
   var net1=ti-expD;
   var rmfR=Math.min(s.rmf,net1*0.30),ssfR=Math.min(s.ssf,Math.min(net1*0.30,200000)),annR=Math.min(s.annuityIns,Math.min(net1*0.15,200000));
@@ -231,8 +231,8 @@ function genAdvice(c){
   var hlthRoom=25000-s.healthIns;
   if(hlthRoom>0){var save2=calcTax(c.ni)-calcTax(Math.max(0,c.ni-Math.min(hlthRoom,25000)));if(save2>0)items.push({icon:"❤️",title:"ประกันสุขภาพ",text:"สามารถซื้อเพิ่มได้อีก ฿"+fmt(hlthRoom)+" (เหลือเพดาน 25,000)",save:save2});}
   // ประกันสังคม
-  var ssRoom=9000-s.socialSec;
-  if(ssRoom>0){var save3=calcTax(c.ni)-calcTax(Math.max(0,c.ni-ssRoom));if(save3>0)items.push({icon:"👷",title:"ประกันสังคม",text:"สามารถเพิ่มได้อีก ฿"+fmt(ssRoom)+" (เหลือเพดาน 9,000)",save:save3});}
+  var ssRoom=10500-s.socialSec;
+  if(ssRoom>0){var save3=calcTax(c.ni)-calcTax(Math.max(0,c.ni-ssRoom));if(save3>0)items.push({icon:"👷",title:"ประกันสังคม",text:"สามารถเพิ่มได้อีก ฿"+fmt(ssRoom)+" (เหลือเพดาน 10,500)",save:save3});}
   // RMF+SSF+กลุ่ม 500k
   var groupUsed=c.gRaw,groupRoom=Math.max(0,500000-groupUsed);
   var rmfMax=Math.min(net1*0.30,500000-groupUsed);
@@ -374,7 +374,7 @@ function render(){
       inp("lifeIns","ประกันชีวิต / ประกันออมทรัพย์","","สูงสุด 100,000 บาท")+
       inp("healthIns","ประกันสุขภาพตนเอง","","สูงสุด 25,000 บาท (รวมกับชีวิตไม่เกิน 100,000)")+
       inp("parentHealthIns","ประกันสุขภาพบิดามารดา","","สูงสุด 15,000 บาท")+
-      inp("socialSec","ประกันสังคม","","สูงสุด 9,000 บาท (ฐาน 15,000 × 5% × 12 เดือน)"))+
+      inp("socialSec","ประกันสังคม","","สูงสุด 10,500 บาท (ฐาน 17,500 × 5% × 12 เดือน)"))+
     sec("s4","📈","การออมและลงทุน","#059669",
       '<div class="ibox"><div class="ibtit">⚠️ เงื่อนไขรวม</div><div class="ibtxt">RMF + SSF + ประกันบำนาญ + PVD + กบข. + กอช. <strong>รวมกันต้องไม่เกิน 500,000 บาท</strong></div></div>'+
       inp("rmf","กองทุน RMF","","สูงสุด 30% ของเงินได้ (รวมกลุ่มไม่เกิน 500,000)")+
