@@ -160,8 +160,8 @@ var DEFAULT={salary:0,bonus:0,income40_2:0,income40_3:0,interest:0,dividend:0,
   prof40_6:0,prof40_6type:"other",income40_7:0,rental:0,other40:0,
   maritalStatus:"single",spouseIncome:false,children:0,parents:0,disabled:0,
   lifeIns:0,healthIns:0,parentHealthIns:0,socialSec:0,
-  rmf:0,annuityIns:0,pvd:0,govPension:0,nsf:0,thaiesg:0,
-  mortgage:0,easyReceipt:0,shopDee:0,otop:0,donation:0,eduDonation:0,politicalDonate:0,newHome:0,
+  rmf:0,ssf:0,annuityIns:0,pvd:0,govPension:0,nsf:0,thaiesg:0,
+  mortgage:0,easyReceipt:0,solarRooftop:0,otop:0,donation:0,eduDonation:0,politicalDonate:0,newHome:0,
   prepaid:0,s1:true,s2:true,s3:true,s4:true,s5:true};
 
 var S={};
@@ -198,16 +198,16 @@ function compute(){
   var selfD=60000,spouseD=(s.maritalStatus==="married"&&!s.spouseIncome)?60000:0;
   var childD=Math.min(s.children,3)*30000,parentD=s.parents*30000,disD=s.disabled*60000;
   var perD=selfD+spouseD+childD+parentD+disD;
-  var lifeD=Math.min(s.lifeIns,100000),hlthD=Math.min(s.healthIns,25000),phD=Math.min(s.parentHealthIns,15000),ssD=Math.min(s.socialSec,10500);
+  var lifeD=Math.min(s.lifeIns,100000),hlthD=Math.min(s.healthIns,25000),phD=Math.min(s.parentHealthIns,15000),ssD=Math.min(s.socialSec,9000);
   var insD=Math.min(lifeD+hlthD,100000)+phD+ssD;
   var net1=ti-expD;
-  var rmfR=Math.min(s.rmf,net1*0.30),annR=Math.min(s.annuityIns,Math.min(net1*0.15,200000));
+  var rmfR=Math.min(s.rmf,net1*0.30),ssfR=Math.min(s.ssf,Math.min(net1*0.30,200000)),annR=Math.min(s.annuityIns,Math.min(net1*0.15,200000));
   var pvdR=Math.min(s.pvd,500000),govR=Math.min(s.govPension,500000),nsfR=Math.min(s.nsf,30000);
-  var gRaw=rmfR+annR+pvdR+govR+nsfR,gCap=500000,rat=gRaw>gCap?gCap/gRaw:1;
-  var rmfD=rmfR*rat,annD=annR*rat,pvdD=pvdR*rat,govD=govR*rat,nsfD=nsfR*rat;
+  var gRaw=rmfR+ssfR+annR+pvdR+govR+nsfR,gCap=500000,rat=gRaw>gCap?gCap/gRaw:1;
+  var rmfD=rmfR*rat,ssfD=ssfR*rat,annD=annR*rat,pvdD=pvdR*rat,govD=govR*rat,nsfD=nsfR*rat;
   var esgD=Math.min(s.thaiesg,Math.min(net1*0.30,300000));
-  var savD=rmfD+annD+pvdD+govD+nsfD+esgD;
-  var spendD=Math.min(s.mortgage,100000)+Math.min(s.easyReceipt,50000)+Math.min(s.shopDee,50000)+Math.min(s.otop,10000)+Math.min(s.donation*2,net1*0.10)+Math.min(s.eduDonation,net1*0.10)+Math.min(s.politicalDonate,10000)+Math.min(s.newHome*0.005,100000);
+  var savD=rmfD+ssfD+annD+pvdD+govD+nsfD+esgD;
+  var spendD=Math.min(s.mortgage,100000)+Math.min(s.easyReceipt,50000)+Math.min(s.solarRooftop,200000)+Math.min(s.otop,10000)+Math.min(s.donation*2,net1*0.10)+Math.min(s.eduDonation,net1*0.10)+Math.min(s.politicalDonate,10000)+Math.min(s.newHome*0.005,100000);
   var allD=expD+perD+insD+savD+spendD;
   var ni=Math.max(0,ti-allD),tax=calcTax(ni);
   var netTax=Math.max(0,tax-s.prepaid);
@@ -218,7 +218,7 @@ function compute(){
     eff:eff,mr:getMR(ni),mth:netTax/12,
     selfD:selfD,spouseD:spouseD,childD:childD,parentD:parentD,disD:disD,
     lifeD:lifeD,hlthD:hlthD,phD:phD,ssD:ssD,
-    rmfD:rmfD,annD:annD,pvdD:pvdD,govD:govD,nsfD:nsfD,esgD:esgD,
+    rmfD:rmfD,ssfD:ssfD,annD:annD,pvdD:pvdD,govD:govD,nsfD:nsfD,esgD:esgD,
     gRaw:gRaw,gCap:gCap,net1:net1};
 }
 
@@ -231,18 +231,24 @@ function genAdvice(c){
   var hlthRoom=25000-s.healthIns;
   if(hlthRoom>0){var save2=calcTax(c.ni)-calcTax(Math.max(0,c.ni-Math.min(hlthRoom,25000)));if(save2>0)items.push({icon:"❤️",title:"ประกันสุขภาพ",text:"สามารถซื้อเพิ่มได้อีก ฿"+fmt(hlthRoom)+" (เหลือเพดาน 25,000)",save:save2});}
   // ประกันสังคม
-  var ssRoom=10500-s.socialSec;
-  if(ssRoom>0){var save3=calcTax(c.ni)-calcTax(Math.max(0,c.ni-ssRoom));if(save3>0)items.push({icon:"👷",title:"ประกันสังคม",text:"สามารถเพิ่มได้อีก ฿"+fmt(ssRoom)+" (เหลือเพดาน 10,500)",save:save3});}
-  // RMF+กลุ่ม 500k
+  var ssRoom=9000-s.socialSec;
+  if(ssRoom>0){var save3=calcTax(c.ni)-calcTax(Math.max(0,c.ni-ssRoom));if(save3>0)items.push({icon:"👷",title:"ประกันสังคม",text:"สามารถเพิ่มได้อีก ฿"+fmt(ssRoom)+" (เหลือเพดาน 9,000)",save:save3});}
+  // RMF+SSF+กลุ่ม 500k
   var groupUsed=c.gRaw,groupRoom=Math.max(0,500000-groupUsed);
   var rmfMax=Math.min(net1*0.30,500000-groupUsed);
-  if(rmfMax>s.rmf&&rmfMax>0){var addRmf=rmfMax-s.rmf;var save4=calcTax(c.ni)-calcTax(Math.max(0,c.ni-Math.min(addRmf*c.gRaw>c.gCap?c.gCap/c.gRaw:1,addRmf)));if(save4>0)items.push({icon:"📈",title:"กองทุน RMF",text:"สามารถซื้อเพิ่มได้อีก ฿"+fmt(addRmf)+" (RMF+กลุ่มเหลือ ฿"+fmt(groupRoom)+")",save:save4});}
+  if(rmfMax>s.rmf&&rmfMax>0){var addRmf=rmfMax-s.rmf;var save4=calcTax(c.ni)-calcTax(Math.max(0,c.ni-Math.min(addRmf*c.gRaw>c.gCap?c.gCap/c.gRaw:1,addRmf)));if(save4>0)items.push({icon:"📈",title:"กองทุน RMF",text:"สามารถซื้อเพิ่มได้อีก ฿"+fmt(addRmf)+" (กลุ่มเหลือ ฿"+fmt(groupRoom)+")",save:save4});}
+  // SSF
+  var ssfMax=Math.min(net1*0.30,200000,Math.max(0,500000-groupUsed));
+  if(ssfMax>s.ssf&&ssfMax>0){var addSsf=ssfMax-s.ssf;var save4b=calcTax(c.ni)-calcTax(Math.max(0,c.ni-addSsf));if(save4b>0)items.push({icon:"💼",title:"กองทุน SSF",text:"สามารถซื้อเพิ่มได้อีก ฿"+fmt(addSsf)+" (SSF+กลุ่มเหลือ ฿"+fmt(groupRoom)+")",save:save4b});}
   // ประกันบำนาญ
   var annMax=Math.min(net1*0.15,200000,Math.max(0,500000-groupUsed));
   if(annMax>s.annuityIns&&annMax>0){var addAnn=annMax-s.annuityIns;var save5=calcTax(c.ni)-calcTax(Math.max(0,c.ni-addAnn));if(save5>0)items.push({icon:"🏦",title:"ประกันบำนาญ",text:"สามารถซื้อเพิ่มได้อีก ฿"+fmt(addAnn)+" (เหลือเพดาน 200,000 หรือ 15%)",save:save5});}
   // Thai ESG
   var esgMax=Math.min(net1*0.30,300000),esgRoom=esgMax-s.thaiesg;
   if(esgRoom>0){var save6=calcTax(c.ni)-calcTax(Math.max(0,c.ni-esgRoom));if(save6>0)items.push({icon:"🌿",title:"กองทุน Thai ESG",text:"สามารถซื้อเพิ่มได้อีก ฿"+fmt(esgRoom)+" (เหลือเพดาน 300,000 หรือ 30%)",save:save6});}
+  // Solar Rooftop
+  var solarRoom=200000-s.solarRooftop;
+  if(solarRoom>0){var saveSolar=calcTax(c.ni)-calcTax(Math.max(0,c.ni-solarRoom));if(saveSolar>0)items.push({icon:"☀️",title:"ค่าติดตั้ง Solar Rooftop",text:"สามารถใช้สิทธิ์เพิ่มได้อีก ฿"+fmt(solarRoom)+" (เหลือเพดาน 200,000) · ระบบ On-Grid ≤10 kWp",save:saveSolar});}
   // ดอกเบี้ยบ้าน
   var mortRoom=100000-s.mortgage;
   if(mortRoom>0)items.push({icon:"🏠",title:"ดอกเบี้ยกู้ยืมซื้อบ้าน",text:"ยังสามารถนำดอกเบี้ยมาลดหย่อนได้อีก ฿"+fmt(mortRoom)+" (เหลือเพดาน 100,000)",save:0});
@@ -294,6 +300,7 @@ function render(){
   if(c.phD>0)deducts.push({l:"ประกัน พ่อแม่",v:c.phD,c:"#fcd34d"});
   if(c.ssD>0)deducts.push({l:"ประกันสังคม",v:c.ssD,c:"#fb923c"});
   if(c.rmfD>0)deducts.push({l:"RMF",v:c.rmfD,c:"#10b981"});
+  if(c.ssfD>0)deducts.push({l:"SSF",v:c.ssfD,c:"#06b6d4"});
   if(c.annD>0)deducts.push({l:"ประกันบำนาญ",v:c.annD,c:"#2dd4bf"});
   if(c.pvdD>0)deducts.push({l:"PVD",v:c.pvdD,c:"#059669"});
   if(c.govD>0)deducts.push({l:"กบข.",v:c.govD,c:"#047857"});
@@ -368,10 +375,11 @@ function render(){
       inp("lifeIns","ประกันชีวิต / ประกันออมทรัพย์","","สูงสุด 100,000 บาท")+
       inp("healthIns","ประกันสุขภาพตนเอง","","สูงสุด 25,000 บาท (รวมกับชีวิตไม่เกิน 100,000)")+
       inp("parentHealthIns","ประกันสุขภาพบิดามารดา","","สูงสุด 15,000 บาท")+
-      inp("socialSec","ประกันสังคม","","สูงสุด 10,500 บาท"))+
+      inp("socialSec","ประกันสังคม","","สูงสุด 9,000 บาท (ฐาน 15,000 × 5% × 12 เดือน)"))+
     sec("s4","📈","การออมและลงทุน","#059669",
-      '<div class="ibox"><div class="ibtit">⚠️ เงื่อนไขรวม</div><div class="ibtxt">RMF + ประกันบำนาญ + PVD + กบข. + กอช. <strong>รวมกันต้องไม่เกิน 500,000 บาท</strong></div></div>'+
+      '<div class="ibox"><div class="ibtit">⚠️ เงื่อนไขรวม</div><div class="ibtxt">RMF + SSF + ประกันบำนาญ + PVD + กบข. + กอช. <strong>รวมกันต้องไม่เกิน 500,000 บาท</strong></div></div>'+
       inp("rmf","กองทุน RMF","","สูงสุด 30% ของเงินได้ (รวมกลุ่มไม่เกิน 500,000)")+
+      inp("ssf","กองทุน SSF","","สูงสุด 30% ของเงินได้ แต่ไม่เกิน 200,000 บาท (รวมกลุ่มไม่เกิน 500,000)")+
       inp("annuityIns","ประกันบำนาญ","","สูงสุด 15% ของเงินได้ แต่ไม่เกิน 200,000 บาท")+
       inp("pvd","กองทุนสำรองเลี้ยงชีพ (PVD)","","สูงสุด 15% ของเงินได้ แต่ไม่เกิน 500,000 บาท")+
       inp("govPension","กองทุนบำเหน็จบำนาญราชการ (กบข.)","","รวมกลุ่มไม่เกิน 500,000 บาท")+
@@ -379,8 +387,8 @@ function render(){
       inp("thaiesg","กองทุน Thai ESG","","สูงสุด 30% ของเงินได้ แต่ไม่เกิน 300,000 บาท (แยกเพดาน)"))+
     sec("s5","🛒","มาตรการกระตุ้นเศรษฐกิจและบริจาค","#dc2626",
       inp("mortgage","ดอกเบี้ยกู้ยืมซื้อบ้าน","","สูงสุด 100,000 บาท")+
-      inp("easyReceipt","Easy e-Receipt 2569","","สูงสุด 50,000 บาท")+
-      inp("shopDee","ช้อปดีมีคืน","","")+
+      inp("easyReceipt","Easy e-Receipt 2569","","สูงสุด 50,000 บาท (ใช้จ่ายผ่าน e-Tax Invoice หรือ e-Receipt)")+
+      inp("solarRooftop","ค่าติดตั้ง Solar Rooftop","","สูงสุด 200,000 บาท · ระบบ On-Grid ≤10 kWp · ต้องมี e-Tax Invoice · มีผล 3 มี.ค. 2569–31 ธ.ค. 2571")+
       inp("otop","OTOP","","สูงสุด 10,000 บาท")+
       inp("newHome","ราคาบ้านใหม่ที่ซื้อ (คำนวณ 0.5%)","","ลดหย่อน 0.5% สูงสุด 100,000 บาท")+
       inp("eduDonation","บริจาคเพื่อการศึกษา / กีฬา","","สูงสุด 10% ของเงินได้สุทธิ")+
@@ -416,7 +424,7 @@ function render(){
 
     '<div class="wcard">'+
       '<h3><span>📋</span> รายละเอียดค่าลดหย่อน</h3>'+
-      (c.gRaw>c.gCap?'<div class="warn"><div class="warnt">⚠️ กลุ่ม RMF+บำนาญ+PVD+กบข.+กอช. เกินเพดาน</div><div class="warntxt">ก่อน cap: ฿'+fmt(c.gRaw)+' → ใช้ได้จริง: ฿'+fmt(c.gCap)+' (ปรับสัดส่วนอัตโนมัติ)</div></div>':'')+
+      (c.gRaw>c.gCap?'<div class="warn"><div class="warnt">⚠️ กลุ่ม RMF+SSF+บำนาญ+PVD+กบข.+กอช. เกินเพดาน</div><div class="warntxt">ก่อน cap: ฿'+fmt(c.gRaw)+' → ใช้ได้จริง: ฿'+fmt(c.gCap)+' (ปรับสัดส่วนอัตโนมัติ)</div></div>':'')+
       dRows+'<div class="dtot"><span class="dtotl">รวมลดหย่อนทั้งหมด</span><span class="dtotv">฿'+fmt(c.allD)+'</span></div>'+
     '</div>'+
 
