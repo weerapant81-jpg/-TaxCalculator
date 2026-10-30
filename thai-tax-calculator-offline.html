@@ -161,7 +161,7 @@ var DEFAULT={salary:0,bonus:0,income40_2:0,income40_3:0,interest:0,dividend:0,
   maritalStatus:"single",spouseIncome:false,children:0,parents:0,disabled:0,
   lifeIns:0,healthIns:0,parentHealthIns:0,socialSec:0,
   rmf:0,ssf:0,annuityIns:0,pvd:0,govPension:0,nsf:0,thaiesg:0,
-  mortgage:0,easyReceipt:0,otop:0,donation:0,eduDonation:0,politicalDonate:0,newHome:0,
+  mortgage:0,easyReceipt:0,solarRooftop:0,otop:0,donation:0,eduDonation:0,politicalDonate:0,newHome:0,
   prepaid:0,s1:true,s2:true,s3:true,s4:true,s5:true};
 
 var S={};
@@ -207,7 +207,7 @@ function compute(){
   var rmfD=rmfR*rat,ssfD=ssfR*rat,annD=annR*rat,pvdD=pvdR*rat,govD=govR*rat,nsfD=nsfR*rat;
   var esgD=Math.min(s.thaiesg,Math.min(net1*0.30,300000));
   var savD=rmfD+ssfD+annD+pvdD+govD+nsfD+esgD;
-  var spendD=Math.min(s.mortgage,100000)+Math.min(s.easyReceipt,50000)+Math.min(s.otop,10000)+Math.min(s.donation*2,net1*0.10)+Math.min(s.eduDonation,net1*0.10)+Math.min(s.politicalDonate,10000)+Math.min(s.newHome*0.005,100000);
+  var spendD=Math.min(s.mortgage,100000)+Math.min(s.easyReceipt,50000)+Math.min(s.solarRooftop,200000)+Math.min(s.otop,10000)+Math.min(s.donation*2,net1*0.10)+Math.min(s.eduDonation,net1*0.10)+Math.min(s.politicalDonate,10000)+Math.min(s.newHome*0.005,100000);
   var allD=expD+perD+insD+savD+spendD;
   var ni=Math.max(0,ti-allD),tax=calcTax(ni);
   var netTax=Math.max(0,tax-s.prepaid);
@@ -246,6 +246,9 @@ function genAdvice(c){
   // Thai ESG
   var esgMax=Math.min(net1*0.30,300000),esgRoom=esgMax-s.thaiesg;
   if(esgRoom>0){var save6=calcTax(c.ni)-calcTax(Math.max(0,c.ni-esgRoom));if(save6>0)items.push({icon:"🌿",title:"กองทุน Thai ESG",text:"สามารถซื้อเพิ่มได้อีก ฿"+fmt(esgRoom)+" (เหลือเพดาน 300,000 หรือ 30%)",save:save6});}
+  // Solar Rooftop
+  var solarRoom=200000-s.solarRooftop;
+  if(solarRoom>0){var saveSolar=calcTax(c.ni)-calcTax(Math.max(0,c.ni-solarRoom));if(saveSolar>0)items.push({icon:"☀️",title:"ค่าติดตั้ง Solar Rooftop",text:"สามารถใช้สิทธิ์เพิ่มได้อีก ฿"+fmt(solarRoom)+" (เหลือเพดาน 200,000) · ระบบ On-Grid ≤10 kWp",save:saveSolar});}
   // ดอกเบี้ยบ้าน
   var mortRoom=100000-s.mortgage;
   if(mortRoom>0)items.push({icon:"🏠",title:"ดอกเบี้ยกู้ยืมซื้อบ้าน",text:"ยังสามารถนำดอกเบี้ยมาลดหย่อนได้อีก ฿"+fmt(mortRoom)+" (เหลือเพดาน 100,000)",save:0});
@@ -384,6 +387,7 @@ function render(){
     sec("s5","🛒","มาตรการกระตุ้นเศรษฐกิจและบริจาค","#dc2626",
       inp("mortgage","ดอกเบี้ยกู้ยืมซื้อบ้าน","","สูงสุด 100,000 บาท")+
       inp("easyReceipt","Easy e-Receipt 2569","","สูงสุด 50,000 บาท (ใช้จ่ายผ่าน e-Tax Invoice หรือ e-Receipt)")+
+      inp("solarRooftop","ค่าติดตั้ง Solar Rooftop","","สูงสุด 200,000 บาท · ระบบ On-Grid ≤10 kWp · ต้องมี e-Tax Invoice · มีผล 3 มี.ค. 2569–31 ธ.ค. 2571")+
       inp("otop","OTOP","","สูงสุด 10,000 บาท")+
       inp("newHome","ราคาบ้านใหม่ที่ซื้อ (คำนวณ 0.5%)","","ลดหย่อน 0.5% สูงสุด 100,000 บาท")+
       inp("eduDonation","บริจาคเพื่อการศึกษา / กีฬา","","สูงสุด 10% ของเงินได้สุทธิ")+
